@@ -381,6 +381,19 @@ Built with 💙 by 7 pre-final year CSE-AIML students from **Haldia Istitute of 
 | Growth + QA | Testing · Analytics · Community · Social Media |
 
 ---
+## 👥 Team & Responsibilities
+
+| Name | Role | Responsibilities |
+|------|------|------------------|
+| Aishwarya Shree | Project Lead, AI & Architecture | Designed system architecture, developed AI components, integrated AI with backend, handled AWS deployment, and testing |
+| Harshita Smriti | Backend & Database | Developed backend APIs, handled Supabase integration, implemented memory systems |
+| Simran Patel | Frontend Developer | Built UI components and handled frontend integration |
+| Ankita Kumari | Frontend Developer | Worked on UI development and responsiveness |
+| Rounit Raj Singh | Frontend Developer | Assisted in frontend development and integration |
+| Neeraj Kumar | Testing & QA | Performed testing and bug reporting |
+| Supriya Jana | Content & Support | Managed content and assisted in project support tasks |
+
+---
 
 ## 🤝 Contributing
 
