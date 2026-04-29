@@ -151,6 +151,14 @@ Shapes ────────────────────────�
 > 💡 **Total infrastructure cost for MVP: $0.** Built entirely on free tiers.
 
 ---
+## Frontend Overview
+
+- Built using modern UI practices
+- Communicates with backend via REST APIs
+- Handles user interaction, mood input, and chat interface
+- Designed for responsive and accessible user experience
+
+---
 
 ## 🏗️ Project Structure
 
