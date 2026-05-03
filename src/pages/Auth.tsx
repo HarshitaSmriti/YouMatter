@@ -97,3 +97,12 @@ export const useAuth = () => {
 
   return { user, loading, signIn, signUp, signOut };
 };
+
+<button
+  onClick={async () => {
+    const { data } = await supabase.auth.getSession();
+    console.log("MANUAL SESSION:", data.session);
+  }}
+>
+  Check Session
+</button>
