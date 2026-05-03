@@ -57,16 +57,23 @@ export const useAuth = () => {
 
   //  SIGN IN
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    return {
-      error: error?.message || null,
-      session: data.session,
-    };
+  console.log("LOGIN RESPONSE:", data); //  DEBUG
+
+  //  FORCE SAVE TOKEN HERE
+  if (data?.session?.access_token) {
+    localStorage.setItem("token", data.session.access_token);
+  }
+
+  return {
+    error: error?.message || null,
+    session: data.session,
   };
+};
 
   //  SIGN OUT
   const signOut = async () => {
