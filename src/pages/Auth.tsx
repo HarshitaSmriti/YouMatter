@@ -6,11 +6,12 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 🔥 GET INITIAL SESSION
+    let isMounted = true;
+
     const init = async () => {
       const { data } = await supabase.auth.getSession();
 
-      console.log("INITIAL SESSION:", data.session);
+      if (!isMounted) return;
 
       if (data.session) {
         setUser(data.session.user);
@@ -25,11 +26,10 @@ export const useAuth = () => {
 
     init();
 
-    // 🔥 LISTEN TO AUTH CHANGES
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("AUTH CHANGE:", session);
+      if (!isMounted) return;
 
       if (session) {
         setUser(session.user);
@@ -41,11 +41,11 @@ export const useAuth = () => {
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  // 🔥 SIGN UP
   const signUp = async (email: string, password: string, fullName: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -57,9 +57,6 @@ export const useAuth = () => {
       },
     });
 
-    console.log("SIGNUP DATA:", data);
-    console.log("SIGNUP ERROR:", error);
-
     return {
       error: error?.message || null,
       session: data.session,
@@ -67,17 +64,13 @@ export const useAuth = () => {
     };
   };
 
-  // 🔥 SIGN IN
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    console.log("LOGIN DATA:", data);
-    console.log("LOGIN ERROR:", error);
-
-    // 🔥 FORCE SAVE TOKEN (important)
+    // immediate token store (extra safety)
     if (data?.session?.access_token) {
       localStorage.setItem("token", data.session.access_token);
     }
@@ -88,7 +81,6 @@ export const useAuth = () => {
     };
   };
 
-  // 🔥 SIGN OUT
   const signOut = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("token");
@@ -97,12 +89,3 @@ export const useAuth = () => {
 
   return { user, loading, signIn, signUp, signOut };
 };
-
-<button
-  onClick={async () => {
-    const { data } = await supabase.auth.getSession();
-    console.log("MANUAL SESSION:", data.session);
-  }}
->
-  Check Session
-</button>
