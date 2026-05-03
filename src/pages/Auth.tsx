@@ -6,37 +6,46 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // get current session
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user || null);
+    // 🔥 GET INITIAL SESSION
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
 
-      // store token if exists
-      if (data.session?.access_token) {
+      console.log("INITIAL SESSION:", data.session);
+
+      if (data.session) {
+        setUser(data.session.user);
         localStorage.setItem("token", data.session.access_token);
+      } else {
+        setUser(null);
+        localStorage.removeItem("token");
       }
 
       setLoading(false);
+    };
+
+    init();
+
+    // 🔥 LISTEN TO AUTH CHANGES
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("AUTH CHANGE:", session);
+
+      if (session) {
+        setUser(session.user);
+        localStorage.setItem("token", session.access_token);
+      } else {
+        setUser(null);
+        localStorage.removeItem("token");
+      }
     });
 
-    // listen for auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user || null);
-
-        if (session?.access_token) {
-          localStorage.setItem("token", session.access_token);
-        } else {
-          localStorage.removeItem("token");
-        }
-      }
-    );
-
     return () => {
-      listener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
-  //  SIGN UP
+  // 🔥 SIGN UP
   const signUp = async (email: string, password: string, fullName: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -48,6 +57,9 @@ export const useAuth = () => {
       },
     });
 
+    console.log("SIGNUP DATA:", data);
+    console.log("SIGNUP ERROR:", error);
+
     return {
       error: error?.message || null,
       session: data.session,
@@ -55,30 +67,32 @@ export const useAuth = () => {
     };
   };
 
-  //  SIGN IN
-const signIn = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  // 🔥 SIGN IN
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  console.log("FULL LOGIN DATA:", data);
-  console.log("ERROR:", error);
+    console.log("LOGIN DATA:", data);
+    console.log("LOGIN ERROR:", error);
 
-  if (data?.session?.access_token) {
-    localStorage.setItem("token", data.session.access_token);
-  }
+    // 🔥 FORCE SAVE TOKEN (important)
+    if (data?.session?.access_token) {
+      localStorage.setItem("token", data.session.access_token);
+    }
 
-  return {
-    error: error?.message || null,
-    session: data.session,
+    return {
+      error: error?.message || null,
+      session: data.session,
+    };
   };
-};
 
-  //  SIGN OUT
+  // 🔥 SIGN OUT
   const signOut = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("token");
+    setUser(null);
   };
 
   return { user, loading, signIn, signUp, signOut };
