@@ -56,7 +56,12 @@ const Chat = () => {
       const reply: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: res.reply || "No response from AI",
+        content:
+        res?.reply ||
+        (res?.message === "Message saved"
+        ? "Got your message 💜 I'm here with you."
+        : res?.message) ||
+        "No response from AI",
       };
 
       setMessages((prev) => [...prev, reply]);

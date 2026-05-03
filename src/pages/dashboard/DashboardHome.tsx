@@ -1,3 +1,6 @@
+import { useEffect } from "react"; // ✅ added
+import { apiFetch } from "@/lib/api"; // ✅ added
+
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import { MessageCircle, BookOpen, Wind, Activity, FileText, Sparkles } from "lucide-react";
@@ -15,6 +18,20 @@ const quickActions = [
 const DashboardHome = () => {
   const { user } = useAuth();
   const name = user?.user_metadata?.full_name?.split(' ')[0] || "there";
+
+  // ✅ STEP 2: Backend test
+  useEffect(() => {
+    const test = async () => {
+      try {
+        const res = await apiFetch("/users");
+        console.log("BACKEND:", res);
+      } catch (err) {
+        console.error("ERROR:", err);
+      }
+    };
+
+    test();
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in">
