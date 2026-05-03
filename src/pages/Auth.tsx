@@ -40,24 +40,46 @@ const Auth = () => {
     </div>
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (isSignUp && password !== confirmPassword) {
-      setError("Passwords don't match");
-      return;
-    }
-    setSubmitting(true);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
+
+  if (isSignUp && password !== confirmPassword) {
+    setError("Passwords don't match");
+    return;
+  }
+
+  setSubmitting(true);
+
+  try {
     if (isSignUp) {
       const result = await signUp(email, password, fullName);
-      if (result.error) setError(result.error);
-      else if (result.needsConfirmation) setConfirmationSent(true);
+
+      if (result.error) {
+        setError(result.error);
+      } else if (result.needsConfirmation) {
+        setConfirmationSent(true);
+      } else if (result.session) {
+        // SAVE TOKEN HERE
+        localStorage.setItem("token", result.session.access_token);
+      }
+
     } else {
       const result = await signIn(email, password);
-      if (result.error) setError(result.error);
+
+      if (result.error) {
+        setError(result.error);
+      } else if (result.session) {
+        //   TOKEN SAVED HERE
+        localStorage.setItem("token", result.session.access_token);
+      }
     }
-    setSubmitting(false);
-  };
+  } catch (err: any) {
+    setError(err.message || "Something went wrong");
+  }
+
+  setSubmitting(false);
+};
 
   return (
     <div className="min-h-screen cloud-bg flex items-center justify-center p-4 relative">
