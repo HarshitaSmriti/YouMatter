@@ -23,7 +23,7 @@ const Chat = () => {
       id: '1',
       role: 'assistant',
       content:
-        "Hey there 💜 I'm Aasha, your emotional wellness companion. How are you feeling right now? I'm here to listen without any judgment.",
+        "Hey there I'm Aasha, your emotional wellness companion. How are you feeling right now? I'm here to listen without any judgment.",
     },
   ]);
 
