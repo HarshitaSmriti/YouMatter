@@ -1,37 +1,64 @@
 const BASE_URL = "https://you-matter-backend.onrender.com/api/v1";
 
-export const apiFetch = async (endpoint: string, options: any = {}) => {
+//  CORE FETCH FUNCTION
+export const apiFetch = async (
+  endpoint: string,
+  options: RequestInit = {}
+) => {
   const token = localStorage.getItem("token");
 
-  // 🔥 IMPORTANT: check token before request
   if (!token) {
-    console.error("❌ No token found");
+    console.error(" No token found");
     throw new Error("Not authenticated");
   }
 
-  console.log("TOKEN BEING SENT:", token); // debug
+  try {
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      method: options.method || "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...(options.headers || {}),
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
 
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // correct
-      ...options.headers,
-    },
+    //  safer JSON parse
+    let data: any = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    console.log(" API RESPONSE:", data);
+
+    //  AUTH ERROR
+    if (res.status === 401) {
+      console.error(" Unauthorized - token expired");
+      localStorage.removeItem("token");
+      throw new Error("Session expired. Please login again.");
+    }
+
+    if (!res.ok) {
+      throw new Error(data?.message || "API Error");
+    }
+
+    return data;
+  } catch (err: any) {
+    console.error(" API ERROR:", err.message);
+    throw err;
+  }
+};
+
+
+// 🔹 CHAT API (IMPORTANT)
+export const sendMessage = async (message: string) => {
+  const res = await apiFetch("/message", {
+    method: "POST",
+    body: { message },
   });
 
-  const data = await res.json();
-
-  //  HANDLE 401 PROPERLY
-  if (res.status === 401) {
-    console.error("❌ Unauthorized - token invalid or expired");
-    localStorage.removeItem("token"); // clear bad token
-    throw new Error("Session expired. Please login again.");
-  }
-
-  if (!res.ok) {
-    throw new Error(data?.message || "API Error");
-  }
-
-  return data;
+  //  Normalize response (VERY IMPORTANT)
+  return res.reply || res.message || res.data || "No response from AI";
 };

@@ -1,84 +1,202 @@
-const Home = () => {
-  const cards = [
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Send, Sparkles, Plus, Phone, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api"; // ✅ FIXED
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+const suggestedPrompts = [
+  "I'm feeling overwhelmed today",
+  "Help me process some anxiety",
+  "I need someone to talk to",
+  "Guide me through a tough day",
+];
+
+const Chat = () => {
+  const [messages, setMessages] = useState<Message[]>([
     {
-      title: "Chat with Aasha",
-      desc: "Talk freely and get support anytime",
-      color: "bg-purple-100 text-purple-600",
-      icon: "💬",
+      id: '1',
+      role: 'assistant',
+      content:
+        "Hey there I'm Aasha, your emotional wellness companion. How are you feeling right now? I'm here to listen without any judgment.",
     },
-    {
-      title: "Journal",
-      desc: "Express your thoughts safely",
-      color: "bg-blue-100 text-blue-600",
-      icon: "📘",
-    },
-    {
-      title: "Mood Tracker",
-      desc: "Track how you feel daily",
-      color: "bg-pink-100 text-pink-600",
-      icon: "💗",
-    },
-    {
-      title: "Breathe",
-      desc: "Calm your mind with exercises",
-      color: "bg-green-100 text-green-600",
-      icon: "🌿",
-    },
-    {
-      title: "Lab Reports",
-      desc: "Understand your reports easily",
-      color: "bg-yellow-100 text-yellow-600",
-      icon: "📄",
-    },
-    {
-      title: "Profile",
-      desc: "Manage your account",
-      color: "bg-gray-100 text-gray-600",
-      icon: "👤",
-    },
-  ];
+  ]);
+
+  const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, typing]);
+
+  // ✅ SAME FUNCTION, ONLY FIXED API CALL
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: text.trim(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setTyping(true);
+
+    try {
+      const res = await apiFetch("/message", {
+        method: "POST",
+        body: { message: text.trim() }, // ✅ FIXED
+      });
+
+      console.log("API RESPONSE:", res); // 🔥 DEBUG
+
+      const reply: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          res?.reply ||
+          (res?.message === "Message saved"
+            ? "Got your message 💜 I'm here with you."
+            : res?.message) ||
+          "No response from AI",
+      };
+
+      setMessages((prev) => [...prev, reply]);
+    } catch (err: any) {
+      console.error(err.message);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "Something went wrong. Please try again.",
+        },
+      ]);
+    } finally {
+      setTyping(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f7f5ff] to-white p-8">
-
+    <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-4rem)] animate-fade-in">
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-3xl font-semibold text-gray-800">
-          Welcome back 💜
-        </h1>
-        <p className="text-gray-400 text-sm mt-1">
-          Let’s take care of your mind today
-        </p>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-lavender-glow flex items-center justify-center">
+            <Sparkles className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h2 className="font-heading font-semibold">Aasha</h2>
+            <p className="text-xs text-muted-foreground font-body">
+              Your companion • Always here
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="icon">
+            <Plus className="h-4 w-4" />
+          </Button>
+          <a href="tel:988">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive"
+            >
+              <Phone className="h-4 w-4" />
+            </Button>
+          </a>
+        </div>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-        {cards.map((item, i) => (
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+        {messages.map((msg) => (
           <div
-            key={i}
-            className="bg-white/70 backdrop-blur-lg p-6 rounded-3xl shadow-md hover:shadow-xl transition duration-300 cursor-pointer border border-gray-100"
+            key={msg.id}
+            className={`flex ${
+              msg.role === "user" ? "justify-end" : "justify-start"
+            }`}
           >
-            {/* Icon */}
-            <div className={`w-12 h-12 flex items-center justify-center rounded-xl mb-4 ${item.color}`}>
-              <span className="text-lg">{item.icon}</span>
+            <div
+              className={`max-w-[80%] rounded-2xl p-3.5 text-sm font-body ${
+                msg.role === "user"
+                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                  : "glass-card rounded-bl-sm"
+              }`}
+            >
+              {msg.content}
             </div>
-
-            {/* Title */}
-            <h3 className="font-semibold text-gray-800 text-lg">
-              {item.title}
-            </h3>
-
-            {/* Desc */}
-            <p className="text-gray-400 text-sm mt-1">
-              {item.desc}
-            </p>
           </div>
         ))}
 
+        {typing && (
+          <div className="flex justify-start">
+            <div className="glass-card rounded-2xl rounded-bl-sm p-3.5 flex gap-1">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse-soft" />
+              <span
+                className="w-2 h-2 rounded-full bg-primary animate-pulse-soft"
+                style={{ animationDelay: "0.2s" }}
+              />
+              <span
+                className="w-2 h-2 rounded-full bg-primary animate-pulse-soft"
+                style={{ animationDelay: "0.4s" }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div ref={scrollRef} />
+      </div>
+
+      {/* Suggested Prompts */}
+      {messages.length <= 1 && (
+        <div className="flex gap-2 overflow-x-auto py-3 scrollbar-none">
+          {suggestedPrompts.map((p) => (
+            <button
+              key={p}
+              onClick={() => sendMessage(p)}
+              className="shrink-0 text-xs font-body bg-lavender-light/50 text-primary px-3 py-1.5 rounded-full hover:bg-lavender-light transition-colors"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="flex gap-2 pt-3 border-t border-border">
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) =>
+            e.key === "Enter" && !e.shiftKey && sendMessage(input)
+          }
+          placeholder="Type your message..."
+          className="rounded-full"
+        />
+
+        <Button
+          onClick={() => sendMessage(input)}
+          disabled={!input.trim() || typing}
+          size="icon"
+        >
+          {typing ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+        </Button>
       </div>
     </div>
   );
 };
 
-export default Home;
+export default Chat;
