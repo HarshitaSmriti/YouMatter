@@ -40,9 +40,9 @@ export const apiFetch = async (
       throw new Error("Session expired. Please login again.");
     }
 
-    if (!res.ok) {
-      throw new Error(data?.message || "API Error");
-    }
+   if (!res.ok) {
+   throw new Error(data?.error || data?.message || JSON.stringify(data));
+  }
 
     return data;
   } catch (err: any) {

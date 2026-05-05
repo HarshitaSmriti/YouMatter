@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Activity } from "lucide-react";
 import { MOODS } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 interface MoodLog {
   id: string;
@@ -14,15 +15,66 @@ const MoodTracker = () => {
   const [logs, setLogs] = useState<MoodLog[]>([]);
   const [selected, setSelected] = useState<typeof MOODS[number] | null>(null);
 
-  const logMood = () => {
+  useEffect(() => {
+    const fetchMood = async () => {
+      try {
+        const res = await apiFetch("/mood");
+
+        const data = Array.isArray(res)
+          ? res
+          : res?.data || [];
+
+        const formatted = data.map((m) => ({
+          id: m.id,
+          mood: m.mood_label,
+          score: m.mood_score,
+          created_at: m.created_at,
+        }));
+
+        setLogs(formatted);
+      } catch (err) {
+        console.error("Failed to load moods", err);
+      }
+    };
+
+    fetchMood();
+  }, []);
+
+  const logMood = async () => {
     if (!selected) return;
-    setLogs(prev => [{
-      id: Date.now().toString(),
-      mood: selected.label,
-      score: selected.score,
-      created_at: new Date().toISOString(),
-    }, ...prev]);
-    setSelected(null);
+
+    const scoreMap: Record<string, number> = {
+      happy: 5,
+      neutral: 3,
+      sad: 2,
+      anxious: 2,
+      angry: 1,
+    };
+
+    const key = selected.label.toLowerCase();
+    const score = scoreMap[key] ?? 3; // ✅ fallback safety
+
+    try {
+      await apiFetch("/mood", {
+        method: "POST",
+        body: {
+          mood_score: score,
+          mood_label: key,
+          note: "",
+        },
+      });
+
+      setLogs(prev => [{
+        id: Date.now().toString(),
+        mood: selected.label,
+        score: score,
+        created_at: new Date().toISOString(),
+      }, ...prev]);
+
+      setSelected(null);
+    } catch (err) {
+      console.error("Mood save failed", err);
+    }
   };
 
   return (
@@ -32,7 +84,6 @@ const MoodTracker = () => {
         <p className="text-sm text-muted-foreground font-body">How are you feeling right now?</p>
       </div>
 
-      {/* Mood selector */}
       <div className="glass-card-strong rounded-2xl p-6 text-center">
         <div className="flex gap-4 justify-center mb-6">
           {MOODS.map(m => (
@@ -55,7 +106,6 @@ const MoodTracker = () => {
         </Button>
       </div>
 
-      {/* Mood SVG chart */}
       {logs.length > 1 && (
         <div className="glass-card rounded-2xl p-5">
           <h3 className="font-heading text-sm font-semibold mb-3">Recent Trend</h3>
@@ -77,9 +127,9 @@ const MoodTracker = () => {
               return (
                 <>
                   <polygon points={area} fill="url(#moodGrad)" />
-                  <polyline points={line} fill="none" stroke="hsl(var(--lavender))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <polyline points={line} fill="none" stroke="hsl(var(--lavender))" strokeWidth="2.5" />
                   {points.map((p, i) => (
-                    <circle key={i} cx={p.x} cy={p.y} r="4" fill="hsl(var(--primary-foreground))" stroke="hsl(var(--lavender))" strokeWidth="2" />
+                    <circle key={i} cx={p.x} cy={p.y} r="4" fill="white" stroke="hsl(var(--lavender))" strokeWidth="2" />
                   ))}
                 </>
               );
@@ -88,24 +138,27 @@ const MoodTracker = () => {
         </div>
       )}
 
-      {/* Log history */}
       {logs.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
           <Activity className="h-12 w-12 text-blush-light mx-auto mb-4" />
           <h3 className="font-heading font-semibold mb-2">Start tracking your moods</h3>
-          <p className="text-sm text-muted-foreground font-body">Select how you're feeling to begin building your emotional awareness.</p>
+          <p className="text-sm text-muted-foreground font-body">
+            Select how you're feeling to begin building your emotional awareness.
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
           <h3 className="font-heading text-sm font-semibold">History</h3>
           {logs.map(l => (
-            <div key={l.id} className="glass-card rounded-xl px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{MOODS.find(m => m.label === l.mood)?.emoji}</span>
-                <span className="text-sm font-body font-medium">{l.mood}</span>
+            <div key={l.id} className="glass-card rounded-xl px-4 py-3 flex justify-between">
+              <div className="flex gap-3">
+                <span className="text-xl">
+                  {MOODS.find(m => m.label === l.mood)?.emoji}
+                </span>
+                <span>{l.mood}</span>
               </div>
-              <span className="text-xs text-muted-foreground font-body">
-                {new Date(l.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+              <span className="text-xs text-muted-foreground">
+                {new Date(l.created_at).toLocaleTimeString()}
               </span>
             </div>
           ))}

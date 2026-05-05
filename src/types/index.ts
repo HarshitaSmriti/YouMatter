@@ -79,12 +79,12 @@ export interface ApiState<T> {
 }
 
 export const MOODS = [
-  { emoji: '😊', label: 'Happy', score: 5, color: 'bg-success-light' },
-  { emoji: '😌', label: 'Calm', score: 4, color: 'bg-sky-light' },
-  { emoji: '😐', label: 'Neutral', score: 3, color: 'bg-muted' },
-  { emoji: '😔', label: 'Sad', score: 2, color: 'bg-lavender-light' },
-  { emoji: '😰', label: 'Anxious', score: 1, color: 'bg-blush-light' },
-] as const;
+  { label: "Happy", value: "happy", emoji: "😊" },
+  { label: "Sad", value: "sad", emoji: "😢" },
+  { label: "Angry", value: "angry", emoji: "😠" },
+  { label: "Anxious", value: "anxious", emoji: "😰" },
+  { label: "Neutral", value: "neutral", emoji: "😐" },
+];
 
 export const BREATHING_TECHNIQUES: BreathingTechnique[] = [
   { id: 'box', name: 'Box Breathing', description: 'Equal counts for calm focus', inhale: 4, hold: 4, exhale: 4, holdAfter: 4, rounds: 4 },
