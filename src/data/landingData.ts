@@ -14,7 +14,7 @@ const landingData = {
   navbar: {
     logo: "YouMatter",
 
-    buttonText: "Login",
+    buttonText: "About Us ",
     links: [
       { name: "Home", path: "#home" },
       { name: "Features", path: "#features" },

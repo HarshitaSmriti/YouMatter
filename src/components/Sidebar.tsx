@@ -115,7 +115,7 @@ function Sidebar() {
 
           <div>
             <h3 className="font-bold text-[#241b43]">
-              Harshita
+              {" "}  
             </h3>
 
             <p className="text-sm text-[#8d84ad]">
