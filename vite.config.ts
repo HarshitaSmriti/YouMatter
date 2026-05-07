@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base:"/YouMatter/", server: {
+  server: {
     host: "::",
     port: 5173,
   },
