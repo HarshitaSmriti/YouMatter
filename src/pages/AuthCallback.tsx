@@ -10,18 +10,13 @@ function AuthCallback() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
 
-    //   const { data, error } = code
-    //     ? await supabase.auth.exchangeCodeForSession(code)
-    //     : await supabase.auth.getSession();
+      const { data, error } = code
+        ? await supabase.auth.exchangeCodeForSession(code)
+        : await supabase.auth.getSession();
 
-    console.log("CODE:", code);
-
-const { data, error } = code
-  ? await supabase.auth.exchangeCodeForSession(code)
-  : await supabase.auth.getSession();
-
-console.log("DATA:", data);
-console.log("ERROR:", error);
+      console.log("CODE:", code);
+      console.log("DATA:", data);
+      console.log("ERROR:", error);
 
       if (error) {
         console.error("Authentication callback failed:", error.message);
@@ -29,25 +24,15 @@ console.log("ERROR:", error);
         return;
       }
 
-      const session =
-        "session" in data
-          ? data.session
-          : null;
+      const session = "session" in data ? data.session : null;
 
       if (session) {
-        localStorage.setItem(
-          "token",
-          session.access_token
-        );
+        localStorage.setItem("token", session.access_token);
 
-        const username =
-          session.user.email?.split("@")[0];
+        const username = session.user.email?.split("@")[0];
+        localStorage.setItem("userName", username || "User");
 
-        localStorage.setItem(
-          "userName",
-          username || "User"
-        );
-        console.log("SESSION FOUND");        
+        console.log("SESSION FOUND");
         navigate("/home", { replace: true });
       } else {
         navigate("/login", { replace: true });
