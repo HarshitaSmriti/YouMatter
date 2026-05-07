@@ -7,35 +7,50 @@ function AuthCallback() {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
+      const { data, error } =
+        await supabase.auth.getSession();
 
-      const { data, error } = code
-        ? await supabase.auth.exchangeCodeForSession(code)
-        : await supabase.auth.getSession();
-
-      console.log("CODE:", code);
       console.log("DATA:", data);
       console.log("ERROR:", error);
 
       if (error) {
-        console.error("Authentication callback failed:", error.message);
-        navigate("/login", { replace: true });
+        console.error(
+          "Authentication callback failed:",
+          error.message
+        );
+
+        navigate("/login", {
+          replace: true,
+        });
+
         return;
       }
 
-      const session = "session" in data ? data.session : null;
+      const session = data.session;
 
       if (session) {
-        localStorage.setItem("token", session.access_token);
+        localStorage.setItem(
+          "token",
+          session.access_token
+        );
 
-        const username = session.user.email?.split("@")[0];
-        localStorage.setItem("userName", username || "User");
+        const username =
+          session.user.email?.split("@")[0];
+
+        localStorage.setItem(
+          "userName",
+          username || "User"
+        );
 
         console.log("SESSION FOUND");
-        navigate("/home", { replace: true });
+
+        navigate("/home", {
+          replace: true,
+        });
       } else {
-        navigate("/login", { replace: true });
+        navigate("/login", {
+          replace: true,
+        });
       }
     };
 
