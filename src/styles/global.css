@@ -34,19 +34,19 @@ button {
   cursor: pointer;
 }
 
-.dark {
+html.dark body {
   background-color: #0f172a;
   color: white;
 }
 
-.dark .bg-white {
+html.dark .bg-white {
   background-color: #1e293b !important;
 }
 
-.dark .text-\[\#241b43\] {
+html.dark .text-\[\#241b43\] {
   color: white !important;
 }
 
-.dark .text-\[\#6d6787\] {
+html.dark .text-\[\#6d6787\] {
   color: #cbd5e1 !important;
 }
