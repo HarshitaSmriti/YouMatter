@@ -71,7 +71,7 @@ const signInWithGoogle = async () => {
     provider: "google",
     options: {
       redirectTo:
-        `${window.location.origin}`,
+        `${window.location.origin}/auth/callback`,
     },
   });
 };

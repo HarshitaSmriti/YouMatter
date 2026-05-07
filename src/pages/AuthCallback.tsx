@@ -6,10 +6,24 @@ function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const handleAuthCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      const { data, error } = code
+        ? await supabase.auth.exchangeCodeForSession(code)
+        : await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Authentication callback failed:", error.message);
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const session =
+        "session" in data
+          ? data.session
+          : null;
 
       if (session) {
         localStorage.setItem(
@@ -25,11 +39,13 @@ function AuthCallback() {
           username || "User"
         );
 
-        navigate("/home");
+        navigate("/home", { replace: true });
+      } else {
+        navigate("/login", { replace: true });
       }
     };
 
-    getSession();
+    handleAuthCallback();
   }, [navigate]);
 
   return <p>Loading...</p>;
