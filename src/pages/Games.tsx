@@ -17,6 +17,13 @@ import {
   Star,
 } from "lucide-react";
 
+const COLOR_MATCH_COLORS = [
+  "#8a6dff",
+  "#39b8a3",
+  "#ff7fa8",
+  "#6ea8fe",
+];
+
 function MemoryCardGame({
   setScore,
 }: {
@@ -152,12 +159,7 @@ function ColorMatchGame({
     React.SetStateAction<number>
   >;
 }) {
-  const colors = [
-    "#8a6dff",
-    "#39b8a3",
-    "#ff7fa8",
-    "#6ea8fe",
-  ];
+  const colors = COLOR_MATCH_COLORS;
 
   const [targetColor, setTargetColor] =
     useState(colors[0]);
@@ -173,7 +175,7 @@ function ColorMatchGame({
         )
       ]
     );
-  }, []);
+  }, [colors]);
 
   const handleColorClick = (
     color: string

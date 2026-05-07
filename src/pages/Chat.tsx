@@ -62,7 +62,17 @@ function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (!stored) return [];
+
+    try {
+      return JSON.parse(stored);
+    } catch (err) {
+      console.warn("Unable to load chat history", err);
+      return [];
+    }
+  });
   const [currentSessionId, setCurrentSessionId] = useState<string>(() => {
     return localStorage.getItem(CURRENT_KEY) || generateSessionId();
   });
@@ -76,21 +86,6 @@ function Chat() {
     "Guide me through a tough day",
   ];
  
-  useEffect(() => {
-    const stored = localStorage.getItem(SESSION_KEY);
-    if (stored) {
-      try {
-        setSessions(JSON.parse(stored));
-      } catch {}
-    }
-    localStorage.setItem(CURRENT_KEY, currentSessionId);
-    fetchConversation();
-  }, []);
- 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
- 
   const fetchConversation = async () => {
     try {
       const res = await api.get("/conversation");
@@ -101,6 +96,18 @@ function Chat() {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    localStorage.setItem(CURRENT_KEY, currentSessionId);
+  }, [currentSessionId]);
+
+  useEffect(() => {
+    fetchConversation();
+  }, []);
+ 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
  
   const persistSession = (msgs: Message[]) => {
     if (msgs.length === 0) return;
@@ -159,7 +166,9 @@ function Chat() {
     setHistoryOpen(false);
     try {
       await api.post("/conversation/new", {});
-    } catch {}
+    } catch (err) {
+      console.warn("Unable to start a new backend conversation", err);
+    }
   };
  
   const loadSession = (session: ChatSession) => {

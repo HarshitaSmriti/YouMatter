@@ -16,4 +16,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-(window as any).supabase = supabase;
+declare global {
+  interface Window {
+    supabase: typeof supabase;
+  }
+}
+
+window.supabase = supabase;

@@ -17,6 +17,7 @@ import Support from "./pages/Support";
 import Settings from "./pages/Settings";
 import ConsentForm from "./pages/ConsentForm";
 import AuthCallback from "./pages/AuthCallback";
+import NotFound from "./pages/NotFound";
 
 import {
   useEffect,
@@ -128,6 +129,11 @@ function App() {
       <Route
         path="/auth/callback"
         element={<AuthCallback />}
+      />
+
+      <Route
+        path="*"
+        element={<NotFound />}
       />
     </Routes>
   );

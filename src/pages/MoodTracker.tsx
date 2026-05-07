@@ -83,21 +83,29 @@ export default function MoodTracker() {
     try {
       const last = localStorage.getItem(LAST_MOOD_KEY) as MoodKey;
       return last && MOOD_CONFIG[last] ? last : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   });
 
   const [moodLog, setMoodLog] = useState<MoodEntry[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? (JSON.parse(raw) as MoodEntry[]) : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   });
 
   const cfg = selectedMood ? MOOD_CONFIG[selectedMood] : null;
   const accentColor = cfg?.accent ?? "#8a6dff";
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(moodLog)); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(moodLog));
+    } catch (err) {
+      console.warn("Unable to save mood log", err);
+    }
   }, [moodLog]);
 
   const handleSelect = (key: MoodKey) => {
@@ -110,7 +118,9 @@ export default function MoodTracker() {
         anxious: "warm", angry: "energised", neutral: "calm",
       };
       localStorage.setItem("appMood", moodToTheme[key]);
-    } catch {}
+    } catch (err) {
+      console.warn("Unable to save selected mood", err);
+    }
   };
 
   // Chart
@@ -210,7 +220,7 @@ export default function MoodTracker() {
                 <span className="rounded-xl px-3 py-1.5 text-xs font-bold" style={{ background: cfg?.soft ?? "#ede9fe", color: accentColor }}>
                   {moodLog.length} log{moodLog.length !== 1 ? "s" : ""}
                 </span>
-                <button onClick={() => { setMoodLog([]); try { localStorage.removeItem(STORAGE_KEY); } catch {} }}
+                <button onClick={() => { setMoodLog([]); try { localStorage.removeItem(STORAGE_KEY); } catch (err) { console.warn("Unable to clear mood log", err); } }}
                   className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#c4b8e8] hover:text-[#ef4444] transition-colors">
                   Clear
                 </button>

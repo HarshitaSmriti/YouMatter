@@ -274,13 +274,13 @@ function Home() {
 
     const saved = localStorage.getItem("youmatter_mood_history");
     if (saved) {
-      try { setMoodHistory(JSON.parse(saved)); } catch {}
+      try { setMoodHistory(JSON.parse(saved)); } catch (err) { console.warn("Unable to load mood history", err); }
     }
     const lastMood = localStorage.getItem("youmatter_last_mood");
     if (lastMood && MOOD_CONFIG[lastMood]) setActiveMood(lastMood);
 
     const testBackend = async () => {
-      try { await api.get("/users"); } catch {}
+      try { await api.get("/users"); } catch (err) { console.warn("Backend health check failed", err); }
     };
     testBackend();
   }, []);
