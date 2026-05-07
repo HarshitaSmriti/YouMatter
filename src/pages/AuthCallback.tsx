@@ -10,9 +10,18 @@ function AuthCallback() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
 
-      const { data, error } = code
-        ? await supabase.auth.exchangeCodeForSession(code)
-        : await supabase.auth.getSession();
+    //   const { data, error } = code
+    //     ? await supabase.auth.exchangeCodeForSession(code)
+    //     : await supabase.auth.getSession();
+
+    console.log("CODE:", code);
+
+const { data, error } = code
+  ? await supabase.auth.exchangeCodeForSession(code)
+  : await supabase.auth.getSession();
+
+console.log("DATA:", data);
+console.log("ERROR:", error);
 
       if (error) {
         console.error("Authentication callback failed:", error.message);
@@ -38,7 +47,7 @@ function AuthCallback() {
           "userName",
           username || "User"
         );
-
+        console.log("SESSION FOUND");        
         navigate("/home", { replace: true });
       } else {
         navigate("/login", { replace: true });
